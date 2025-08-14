@@ -28,14 +28,18 @@ public class ReminderListActivity extends AppCompatActivity {
         adapter = new ReminderAdapter(reminderList);
         recyclerView.setAdapter(adapter);
 
-        // Get filter type from intent
         String filter = getIntent().getStringExtra("filter");
         filterTitle.setText(filter + " Reminders");
 
-        // Load reminders in background
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            List<Reminder> allReminders = db.reminderDao().getAllReminders();
+            List<Reminder> allReminders;
+
+            if ("Completed".equals(filter)) {
+                allReminders = db.reminderDao().getCompletedReminders();
+            } else {
+                allReminders = db.reminderDao().getAllReminders();
+            }
 
             List<Reminder> filteredReminders = new ArrayList<>();
             Calendar today = Calendar.getInstance();
@@ -60,10 +64,14 @@ public class ReminderListActivity extends AppCompatActivity {
                     case "All":
                         filteredReminders.add(r);
                         break;
+                    case "Completed":
+                        if (r.completed) {
+                            filteredReminders.add(r);
+                        }
+                        break;
                 }
             }
 
-            // Update UI
             runOnUiThread(() -> {
                 reminderList.clear();
                 reminderList.addAll(filteredReminders);

@@ -20,8 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Reminder> reminderList = new ArrayList<>();
     private static final int ADD_REMINDER_REQUEST = 1;
 
-    // CardViews for Today, Scheduled, All
-    CardView cardToday, cardScheduled, cardAll;
+    CardView cardToday, cardScheduled, cardAll, cardCompleted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,41 +37,41 @@ public class MainActivity extends AppCompatActivity {
         cardToday = findViewById(R.id.cardToday);
         cardScheduled = findViewById(R.id.cardScheduled);
         cardAll = findViewById(R.id.cardAll);
+        cardCompleted = findViewById(R.id.cardCompleted);
 
         // Load reminders from database
         loadReminders();
 
-        // Click listener for Add Reminder button
+        // Add Reminder button
         addReminderButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddReminderActivity.class);
             startActivityForResult(intent, ADD_REMINDER_REQUEST);
         });
 
-        // --- NEW: Click listeners for cards ---
+        // Card click listeners
         cardToday.setOnClickListener(v -> openReminderList("Today"));
         cardScheduled.setOnClickListener(v -> openReminderList("Scheduled"));
         cardAll.setOnClickListener(v -> openReminderList("All"));
+        cardCompleted.setOnClickListener(v -> openReminderList("Completed")); // new
     }
 
-    // Method to start ReminderListActivity with a filter
     private void openReminderList(String filter) {
         Intent intent = new Intent(MainActivity.this, ReminderListActivity.class);
-        intent.putExtra("filter", filter); // pass the filter
+        intent.putExtra("filter", filter);
         startActivity(intent);
     }
 
-    // Load reminders from database in background
     private void loadReminders() {
         new Thread(() -> {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            reminderList = db.reminderDao().getAllReminders();
+            reminderList = db.reminderDao().getAllReminders(); // not completed
+            List<Reminder> completedList = db.reminderDao().getCompletedReminders();
 
-            runOnUiThread(this::updateCounts);
+            runOnUiThread(() -> updateCounts(completedList));
         }).start();
     }
 
-    // Calculate counts for Today, Scheduled, All
-    private void updateCounts() {
+    private void updateCounts(List<Reminder> completedList) {
         Calendar today = Calendar.getInstance();
         int todayYear = today.get(Calendar.YEAR);
         int todayMonth = today.get(Calendar.MONTH);
@@ -81,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         int todayCountValue = 0;
         int scheduledCountValue = 0;
         int allCountValue = reminderList.size();
+        int completedCountValue = completedList.size();
 
         for (Reminder r : reminderList) {
             Calendar reminderDate = Calendar.getInstance();
@@ -94,18 +94,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Update UI counts
         todayCount.setText(String.valueOf(todayCountValue));
         scheduledCount.setText(String.valueOf(scheduledCountValue));
         allCount.setText(String.valueOf(allCountValue));
-        completedCount.setText("0"); // placeholder
+        completedCount.setText(String.valueOf(completedCountValue)); // updated
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ADD_REMINDER_REQUEST) {
-            loadReminders(); // reload after adding reminder
+            loadReminders();
         }
     }
 }
