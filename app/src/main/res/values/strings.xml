@@ -18,6 +18,13 @@
     <string name="count_zero">0</string>
     <string name="select_date_time">Date &amp; Time</string>
 
+        <!-- Existing strings -->
+
+        <string name="done">Done</string>
+        <string name="delete">Delete</string>
+
+
+
 
 
 </resources>
