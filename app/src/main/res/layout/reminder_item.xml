@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/reminder_card">
+
+    <!-- Reminder Title -->
+    <TextView
+        android:id="@+id/reminderTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/title_hint"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#111111" />
+
+    <!-- Reminder Notes -->
+    <TextView
+        android:id="@+id/reminderNotes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/notes_hint"
+        android:textSize="16sp"
+        android:textColor="#333333"
+        android:layout_marginTop="4dp" />
+
+    <!-- Date & Time -->
+    <TextView
+        android:id="@+id/reminderDateTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_date_time"
+        android:textSize="14sp"
+        android:textColor="#555555"
+        android:layout_marginTop="6dp" />
+
+</LinearLayout>

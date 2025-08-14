@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">It\'s Time</string>
+    <string name="search_hint">Search</string>
+    <string name="today">Today</string>
+    <string name="scheduled">Scheduled</string>
+    <string name="all">All</string>
+    <string name="completed">Completed</string>
+    <string name="new_reminder">New Reminder</string>
+
+    <!-- Add these missing strings -->
+    <string name="title_hint">Title</string>
+    <string name="notes_hint">Notes</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_time">Select Time</string>
+    <string name="save_reminder">Save Reminder</string>
+    <string name="count_example">4</string>
+    <string name="count_zero">0</string>
+    <string name="select_date_time">Date &amp; Time</string>
+
+
+
+</resources>
