@@ -25,7 +25,7 @@ public class ReminderListActivity extends AppCompatActivity {
         filterTitle = findViewById(R.id.filterTitle);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ReminderAdapter(reminderList);
+        adapter = new ReminderAdapter(this, reminderList);
         recyclerView.setAdapter(adapter);
 
         String filter = getIntent().getStringExtra("filter");
