@@ -2,82 +2,81 @@ package com.example.itstime;
 
 import android.os.Bundle;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
-import java.util.Calendar;
+
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ReminderListActivity extends AppCompatActivity {
 
-    RecyclerView recyclerView;
-    ReminderAdapter adapter;
-    List<Reminder> reminderList = new ArrayList<>();
+    RecyclerView reminderRecyclerView;
+    ReminderAdapter reminderAdapter;
     TextView filterTitle;
+    AppDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reminder_list);
 
-        recyclerView = findViewById(R.id.reminderRecyclerView);
+        reminderRecyclerView = findViewById(R.id.reminderRecyclerView);
         filterTitle = findViewById(R.id.filterTitle);
+        db = AppDatabase.getInstance(this); // get database instance
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ReminderAdapter(this, reminderList);
-        recyclerView.setAdapter(adapter);
-
+        // Get filter from Intent
         String filter = getIntent().getStringExtra("filter");
-        filterTitle.setText(filter + " Reminders");
+        filterTitle.setText(filter);
 
-        new Thread(() -> {
-            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            List<Reminder> allReminders;
+        loadReminders(filter); // Load reminders from DB
+    }
 
-            if ("Completed".equals(filter)) {
-                allReminders = db.reminderDao().getCompletedReminders();
-            } else {
-                allReminders = db.reminderDao().getAllReminders();
+    /**
+     * Load reminders from database based on filter
+     */
+    private void loadReminders(String filter) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            List<Reminder> reminders;
+
+            switch (filter) {
+                case "Completed":
+                    reminders = db.reminderDao().getCompletedReminders();
+                    break;
+                case "Today":
+                case "Scheduled":
+                case "All":
+                default:
+                    reminders = db.reminderDao().getAllReminders(); // Only uncompleted
+                    break;
             }
 
-            List<Reminder> filteredReminders = new ArrayList<>();
-            Calendar today = Calendar.getInstance();
-
-            for (Reminder r : allReminders) {
-                Calendar reminderDate = Calendar.getInstance();
-                reminderDate.set(r.year, r.month, r.day);
-
-                switch (filter) {
-                    case "Today":
-                        if (r.year == today.get(Calendar.YEAR) &&
-                                r.month == today.get(Calendar.MONTH) &&
-                                r.day == today.get(Calendar.DAY_OF_MONTH)) {
-                            filteredReminders.add(r);
-                        }
-                        break;
-                    case "Scheduled":
-                        if (reminderDate.after(today)) {
-                            filteredReminders.add(r);
-                        }
-                        break;
-                    case "All":
-                        filteredReminders.add(r);
-                        break;
-                    case "Completed":
-                        if (r.completed) {
-                            filteredReminders.add(r);
-                        }
-                        break;
-                }
+            // Filter Today or Scheduled if needed
+            if ("Today".equals(filter)) {
+                reminders.removeIf(r -> !isToday(r));
+            } else if ("Scheduled".equals(filter)) {
+                reminders.removeIf(r -> isToday(r));
             }
 
             runOnUiThread(() -> {
-                reminderList.clear();
-                reminderList.addAll(filteredReminders);
-                adapter.notifyDataSetChanged();
+                reminderAdapter = new ReminderAdapter(this, reminders, filter);
+                reminderRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+                reminderRecyclerView.setAdapter(reminderAdapter);
             });
+        });
+        executor.shutdown();
+    }
 
-        }).start();
+    /**
+     * Check if reminder is today
+     */
+    private boolean isToday(Reminder r) {
+        java.util.Calendar today = java.util.Calendar.getInstance();
+        return r.day == today.get(java.util.Calendar.DAY_OF_MONTH) &&
+                r.month == today.get(java.util.Calendar.MONTH) &&
+                r.year == today.get(java.util.Calendar.YEAR);
     }
 }

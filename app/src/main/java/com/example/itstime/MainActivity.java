@@ -6,53 +6,43 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView todayCount, scheduledCount, allCount, completedCount;
     Button addReminderButton;
-
-    private List<Reminder> reminderList = new ArrayList<>();
-    private static final int ADD_REMINDER_REQUEST = 1;
-
-    CardView cardToday, cardScheduled, cardAll, cardCompleted;
+    AppDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Link UI elements
         todayCount = findViewById(R.id.today_count);
         scheduledCount = findViewById(R.id.scheduled_count);
         allCount = findViewById(R.id.all_count);
         completedCount = findViewById(R.id.completed_count);
+
         addReminderButton = findViewById(R.id.add_reminder_button);
 
-        cardToday = findViewById(R.id.cardToday);
-        cardScheduled = findViewById(R.id.cardScheduled);
-        cardAll = findViewById(R.id.cardAll);
-        cardCompleted = findViewById(R.id.cardCompleted);
+        db = AppDatabase.getInstance(this);
 
-        // Load reminders from database
-        loadReminders();
+        loadCounts();
 
-        // Add Reminder button
         addReminderButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddReminderActivity.class);
-            startActivityForResult(intent, ADD_REMINDER_REQUEST);
+            startActivity(intent);
         });
 
-        // Card click listeners
-        cardToday.setOnClickListener(v -> openReminderList("Today"));
-        cardScheduled.setOnClickListener(v -> openReminderList("Scheduled"));
-        cardAll.setOnClickListener(v -> openReminderList("All"));
-        cardCompleted.setOnClickListener(v -> openReminderList("Completed")); // new
+        findViewById(R.id.cardToday).setOnClickListener(v -> openReminderList("Today"));
+        findViewById(R.id.cardScheduled).setOnClickListener(v -> openReminderList("Scheduled"));
+        findViewById(R.id.cardAll).setOnClickListener(v -> openReminderList("All"));
+        findViewById(R.id.cardCompleted).setOnClickListener(v -> openReminderList("Completed"));
     }
 
     private void openReminderList(String filter) {
@@ -61,50 +51,44 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void loadReminders() {
-        new Thread(() -> {
-            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-            reminderList = db.reminderDao().getAllReminders(); // not completed
-            List<Reminder> completedList = db.reminderDao().getCompletedReminders();
+    private void loadCounts() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                List<Reminder> allReminders = db.reminderDao().getAllReminders(); // uncompleted
+                List<Reminder> completedReminders = db.reminderDao().getCompletedReminders();
 
-            runOnUiThread(() -> updateCounts(completedList));
-        }).start();
-    }
+                int allCountNum = allReminders.size() + completedReminders.size();
+                int completedCountNum = completedReminders.size();
 
-    private void updateCounts(List<Reminder> completedList) {
-        Calendar today = Calendar.getInstance();
-        int todayYear = today.get(Calendar.YEAR);
-        int todayMonth = today.get(Calendar.MONTH);
-        int todayDay = today.get(Calendar.DAY_OF_MONTH);
+                final int[] todayCountNum = {0};
+                final int[] scheduledCountNum = {0};
 
-        int todayCountValue = 0;
-        int scheduledCountValue = 0;
-        int allCountValue = reminderList.size();
-        int completedCountValue = completedList.size();
+                Calendar today = Calendar.getInstance();
 
-        for (Reminder r : reminderList) {
-            Calendar reminderDate = Calendar.getInstance();
-            reminderDate.set(r.year, r.month, r.day);
+                for (Reminder r : allReminders) {
+                    boolean isToday = r.day == today.get(Calendar.DAY_OF_MONTH)
+                            && r.month == today.get(Calendar.MONTH)
+                            && r.year == today.get(Calendar.YEAR);
+                    if (isToday) todayCountNum[0]++;
+                    else scheduledCountNum[0]++;
+                }
 
-            if (r.year == todayYear && r.month == todayMonth && r.day == todayDay) {
-                todayCountValue++;
-                scheduledCountValue++;
-            } else if (reminderDate.after(today)) {
-                scheduledCountValue++;
+                runOnUiThread(() -> {
+                    todayCount.setText(String.valueOf(todayCountNum[0]));
+                    scheduledCount.setText(String.valueOf(scheduledCountNum[0]));
+                    allCount.setText(String.valueOf(allCountNum));
+                    completedCount.setText(String.valueOf(completedCountNum));
+                });
+            } finally {
+                executor.shutdown(); // Close executor to avoid memory leaks
             }
-        }
-
-        todayCount.setText(String.valueOf(todayCountValue));
-        scheduledCount.setText(String.valueOf(scheduledCountValue));
-        allCount.setText(String.valueOf(allCountValue));
-        completedCount.setText(String.valueOf(completedCountValue)); // updated
+        });
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ADD_REMINDER_REQUEST) {
-            loadReminders();
-        }
+    protected void onResume() {
+        super.onResume();
+        loadCounts();
     }
 }
