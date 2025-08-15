@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -19,14 +20,13 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
     private final List<Reminder> reminderList;
     private final Context context;
-    private final String filter; // Page type: "Today", "Scheduled", "All", "Completed"
-    private final AppDatabase db;
+    private final String filter; // Page: Today, Scheduled, All, Completed
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public ReminderAdapter(Context context, List<Reminder> reminderList, String filter) {
         this.context = context;
         this.reminderList = reminderList;
         this.filter = filter;
-        db = AppDatabase.getInstance(context); // Get DB instance
     }
 
     @NonNull
@@ -46,52 +46,43 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         holder.reminderDateTime.setText(reminder.day + "/" + (reminder.month + 1) + "/" + reminder.year +
                 " " + reminder.hour + ":" + reminder.minute);
 
-        // Only show Delete button in Completed page; hide Done button there
-        if ("Completed".equals(filter)) {
-            holder.doneButton.setVisibility(View.GONE);
-        } else {
-            holder.doneButton.setVisibility(View.VISIBLE);
-        }
+        // Only show Done button if not Completed page
+        holder.doneButton.setVisibility("Completed".equals(filter) ? View.GONE : View.VISIBLE);
 
-        // DELETE button click - live delete
+        // DELETE button click with Snackbar Undo
         holder.deleteButton.setOnClickListener(v -> {
-            int pos = holder.getAdapterPosition();
-            if (pos != RecyclerView.NO_POSITION) {
-                Reminder r = reminderList.get(pos);
+            Reminder removedReminder = reminderList.get(position);
+            reminderList.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, reminderList.size());
 
-                // Delete from DB on background thread
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                executor.execute(() -> db.reminderDao().delete(r));
-                executor.shutdown();
+            // Delete from DB
+            executor.execute(() -> AppDatabase.getInstance(context).reminderDao().delete(removedReminder));
 
-                // Remove from current list and update RecyclerView immediately
-                reminderList.remove(pos);
-                notifyItemRemoved(pos);
-                notifyItemRangeChanged(pos, reminderList.size());
-            }
+            // Snackbar Undo
+            Snackbar.make(holder.itemView, "Reminder deleted", Snackbar.LENGTH_LONG)
+                    .setAction("Undo", undoView -> {
+                        reminderList.add(position, removedReminder);
+                        notifyItemInserted(position);
+                        executor.execute(() -> AppDatabase.getInstance(context).reminderDao().insert(removedReminder));
+                    }).show();
         });
 
-        // DONE button click - mark completed and remove from page if needed
+        // DONE button click
         holder.doneButton.setOnClickListener(v -> {
-            int pos = holder.getAdapterPosition();
-            if (pos != RecyclerView.NO_POSITION) {
-                Reminder r = reminderList.get(pos);
-                r.completed = true; // mark completed
+            reminder.completed = true;
 
-                // Update DB in background thread
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                executor.execute(() -> db.reminderDao().update(r));
-                executor.shutdown();
+            // Update in database
+            executor.execute(() -> AppDatabase.getInstance(context).reminderDao().update(reminder));
 
-                // Remove from list immediately if page is not "All" (Today/Scheduled)
-                if (!"All".equals(filter)) {
-                    reminderList.remove(pos);
-                    notifyItemRemoved(pos);
-                    notifyItemRangeChanged(pos, reminderList.size());
-                } else {
-                    // Just refresh the item for "All" page
-                    notifyItemChanged(pos);
-                }
+            // Remove from current list if filter no longer matches
+            boolean shouldRemove = !"Completed".equals(filter); // Remove from Today/Scheduled/All
+            if (shouldRemove) {
+                reminderList.remove(position);
+                notifyItemRemoved(position);
+                notifyItemRangeChanged(position, reminderList.size());
+            } else {
+                notifyItemChanged(position); // Completed page just updates
             }
         });
     }
@@ -101,7 +92,6 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         return reminderList.size();
     }
 
-    // ViewHolder class
     static class ReminderViewHolder extends RecyclerView.ViewHolder {
         TextView reminderTitle, reminderNotes, reminderDateTime;
         MaterialButton doneButton, deleteButton;
