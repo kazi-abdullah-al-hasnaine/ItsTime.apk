@@ -7,88 +7,107 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView todayCount, scheduledCount, allCount, completedCount;
     Button addReminderButton;
     AppDatabase db;
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initialize views
         todayCount = findViewById(R.id.today_count);
         scheduledCount = findViewById(R.id.scheduled_count);
         allCount = findViewById(R.id.all_count);
         completedCount = findViewById(R.id.completed_count);
-
         addReminderButton = findViewById(R.id.add_reminder_button);
 
         db = AppDatabase.getInstance(this);
 
-        loadCounts();
-
+        // Open AddReminderActivity
         addReminderButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddReminderActivity.class);
             startActivity(intent);
         });
 
+        // Open Today reminders
         findViewById(R.id.cardToday).setOnClickListener(v -> openReminderList("Today"));
+
+        // Open Scheduled reminders
         findViewById(R.id.cardScheduled).setOnClickListener(v -> openReminderList("Scheduled"));
+
+        // Open All reminders
         findViewById(R.id.cardAll).setOnClickListener(v -> openReminderList("All"));
+
+        // Open Completed reminders
         findViewById(R.id.cardCompleted).setOnClickListener(v -> openReminderList("Completed"));
+
+        // Load counts initially
+        loadReminderCounts();
     }
 
+    /**
+     * Open ReminderListActivity with the given filter
+     */
     private void openReminderList(String filter) {
         Intent intent = new Intent(MainActivity.this, ReminderListActivity.class);
         intent.putExtra("filter", filter);
         startActivity(intent);
     }
 
-    private void loadCounts() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+    /**
+     * Load reminder counts for Today, Scheduled, All, Completed
+     * Runs in background thread
+     */
+    private void loadReminderCounts() {
         executor.execute(() -> {
-            try {
-                List<Reminder> allReminders = db.reminderDao().getAllReminders(); // uncompleted
-                List<Reminder> completedReminders = db.reminderDao().getCompletedReminders();
+            List<Reminder> allReminders = db.reminderDao().getAllReminders();
+            List<Reminder> completedReminders = db.reminderDao().getCompletedReminders();
 
-                int allCountNum = allReminders.size() + completedReminders.size();
-                int completedCountNum = completedReminders.size();
+            int today = 0;
+            int scheduled = 0;
+            int all = allReminders.size() + completedReminders.size();
+            int completed = completedReminders.size();
 
-                final int[] todayCountNum = {0};
-                final int[] scheduledCountNum = {0};
+            Calendar now = Calendar.getInstance();
+            int currentDay = now.get(Calendar.DAY_OF_MONTH);
+            int currentMonth = now.get(Calendar.MONTH);
+            int currentYear = now.get(Calendar.YEAR);
 
-                Calendar today = Calendar.getInstance();
-
-                for (Reminder r : allReminders) {
-                    boolean isToday = r.day == today.get(Calendar.DAY_OF_MONTH)
-                            && r.month == today.get(Calendar.MONTH)
-                            && r.year == today.get(Calendar.YEAR);
-                    if (isToday) todayCountNum[0]++;
-                    else scheduledCountNum[0]++;
+            for (Reminder r : allReminders) {
+                if (r.day == currentDay && r.month == currentMonth && r.year == currentYear) {
+                    today++;
+                } else {
+                    scheduled++;
                 }
-
-                runOnUiThread(() -> {
-                    todayCount.setText(String.valueOf(todayCountNum[0]));
-                    scheduledCount.setText(String.valueOf(scheduledCountNum[0]));
-                    allCount.setText(String.valueOf(allCountNum));
-                    completedCount.setText(String.valueOf(completedCountNum));
-                });
-            } finally {
-                executor.shutdown(); // Close executor to avoid memory leaks
             }
+
+            int finalToday = today;
+            int finalScheduled = scheduled;
+
+            // Update UI on main thread
+            runOnUiThread(() -> {
+                todayCount.setText(String.valueOf(finalToday));
+                scheduledCount.setText(String.valueOf(finalScheduled));
+                allCount.setText(String.valueOf(all));
+                completedCount.setText(String.valueOf(completed));
+            });
         });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadCounts();
+        // Refresh counts every time user returns to main page
+        loadReminderCounts();
     }
 }
