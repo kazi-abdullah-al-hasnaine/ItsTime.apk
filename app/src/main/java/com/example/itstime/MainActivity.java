@@ -1,5 +1,7 @@
 package com.example.itstime;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -24,7 +26,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize views
+        // ------------------------------
+        // 1. Create Notification Channel
+        // ------------------------------
+        NotificationHelper.createNotificationChannel(this);
+
+        // ------------------------------
+        // 2. Initialize views
+        // ------------------------------
         todayCount = findViewById(R.id.today_count);
         scheduledCount = findViewById(R.id.scheduled_count);
         allCount = findViewById(R.id.all_count);
@@ -33,40 +42,61 @@ public class MainActivity extends AppCompatActivity {
 
         db = AppDatabase.getInstance(this);
 
-        // Open AddReminderActivity
+        // ------------------------------
+        // 3. Button click to open AddReminderActivity
+        // ------------------------------
         addReminderButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddReminderActivity.class);
             startActivity(intent);
         });
 
-        // Open filtered reminder pages
+        // ------------------------------
+        // 4. Card click events
+        // ------------------------------
         findViewById(R.id.cardToday).setOnClickListener(v -> openReminderList("Today"));
         findViewById(R.id.cardScheduled).setOnClickListener(v -> openReminderList("Scheduled"));
         findViewById(R.id.cardAll).setOnClickListener(v -> openReminderList("All"));
         findViewById(R.id.cardCompleted).setOnClickListener(v -> openReminderList("Completed"));
 
-        // Load counts initially
+        // ------------------------------
+        // 5. Load counts initially
+        // ------------------------------
         loadReminderCounts();
+
+        // ------------------------------
+        // 6. Schedule notifications for all future reminders
+        // ------------------------------
+        executor.execute(() -> {
+            List<Reminder> reminders = db.reminderDao().getAllReminders();
+            for (Reminder r : reminders) {
+                Calendar cal = Calendar.getInstance();
+                cal.set(r.year, r.month, r.day, r.hour, r.minute, 0);
+
+                if (cal.getTimeInMillis() > System.currentTimeMillis()) {
+                    scheduleNotificationForReminder(r, cal.getTimeInMillis());
+                }
+            }
+        });
     }
 
+    // ------------------------------
+    // Open filtered reminder list
+    // ------------------------------
     private void openReminderList(String filter) {
         Intent intent = new Intent(MainActivity.this, ReminderListActivity.class);
         intent.putExtra("filter", filter);
         startActivity(intent);
     }
 
-    /**
-     * Updated: Proper counts excluding completed from "All" and separating Today/Scheduled
-     */
+    // ------------------------------
+    // Load counts for Today, Scheduled, All, Completed reminders
+    // ------------------------------
     private void loadReminderCounts() {
         executor.execute(() -> {
-            List<Reminder> allReminders = db.reminderDao().getAllReminders(); // Only not completed
+            List<Reminder> allReminders = db.reminderDao().getAllReminders();
             List<Reminder> completedReminders = db.reminderDao().getCompletedReminders();
 
-            int today = 0;
-            int scheduled = 0;
-            int all = 0;
-            int completed = completedReminders.size();
+            int today = 0, scheduled = 0, all = 0, completed = completedReminders.size();
 
             Calendar now = Calendar.getInstance();
             int currentDay = now.get(Calendar.DAY_OF_MONTH);
@@ -74,17 +104,13 @@ public class MainActivity extends AppCompatActivity {
             int currentYear = now.get(Calendar.YEAR);
 
             for (Reminder r : allReminders) {
-                // Count Today
                 if (r.day == currentDay && r.month == currentMonth && r.year == currentYear) {
                     today++;
-                }
-                // Count Scheduled (future or not today)
-                else {
+                } else {
                     scheduled++;
                 }
             }
 
-            // All = Today + Scheduled (excluding completed)
             all = today + scheduled;
 
             int finalToday = today;
@@ -92,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
             int finalAll = all;
             int finalCompleted = completed;
 
-            // Update UI on main thread
             runOnUiThread(() -> {
                 todayCount.setText(String.valueOf(finalToday));
                 scheduledCount.setText(String.valueOf(finalScheduled));
@@ -105,7 +130,33 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh counts every time user returns to main page
+        // Refresh counts smoothly
         loadReminderCounts();
+    }
+
+    // ------------------------------
+    // Schedule notification for a single reminder
+    // ------------------------------
+    private void scheduleNotificationForReminder(Reminder r, long triggerTime) {
+        Intent intent = new Intent(this, ReminderReceiver.class);
+        intent.putExtra("title", r.title);
+        intent.putExtra("message", r.notes);
+        intent.putExtra("notificationId", r.id);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                r.id,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.setExact(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    pendingIntent
+            );
+        }
     }
 }
