@@ -40,9 +40,8 @@ public class ReminderListActivity extends AppCompatActivity {
         filterTitle.setText(filter);
 
         reminderRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        reminderAdapter = new ReminderAdapter(this, filteredReminders, filter);
+        reminderAdapter = new ReminderAdapter(this, filteredReminders, filter, allReminders);
         reminderRecyclerView.setAdapter(reminderAdapter);
-
         loadReminders();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -56,12 +55,12 @@ public class ReminderListActivity extends AppCompatActivity {
 
     public void loadReminders() {
         executor.execute(() -> {
-            List<Reminder> all = db.reminderDao().getAllReminders();
-            List<Reminder> completed = db.reminderDao().getCompletedReminders();
+            List<Reminder> all = db.reminderDao().getAllReminders();       // completed = 0
+            List<Reminder> completed = db.reminderDao().getCompletedReminders(); // completed = 1
 
             allReminders.clear();
-            allReminders.addAll(all);
-            allReminders.addAll(completed);
+            allReminders.addAll(all);        // only active reminders
+            allReminders.addAll(completed);  // add completed if needed for Completed page
 
             filteredReminders.clear();
             for (Reminder r : allReminders) {
@@ -73,7 +72,7 @@ public class ReminderListActivity extends AppCompatActivity {
                         if (!isToday(r) && !r.completed) filteredReminders.add(r);
                         break;
                     case "All":
-                        filteredReminders.add(r);
+                        if (!r.completed) filteredReminders.add(r); // ❌ Only show active reminders
                         break;
                     case "Completed":
                         if (r.completed) filteredReminders.add(r);
@@ -84,6 +83,7 @@ public class ReminderListActivity extends AppCompatActivity {
             runOnUiThread(() -> reminderAdapter.notifyDataSetChanged());
         });
     }
+
 
     private boolean isToday(Reminder r) {
         Calendar today = Calendar.getInstance();

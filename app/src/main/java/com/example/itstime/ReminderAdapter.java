@@ -1,4 +1,3 @@
-
 package com.example.itstime;
 
 import android.content.Context;
@@ -23,11 +22,13 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
     private final Context context;
     private final String filter; // Page: Today, Scheduled, All, Completed
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final List<Reminder> allReminders; // reference from ReminderListActivity
 
-    public ReminderAdapter(Context context, List<Reminder> reminderList, String filter) {
+    public ReminderAdapter(Context context, List<Reminder> reminderList, String filter, List<Reminder> allReminders) {
         this.context = context;
         this.reminderList = reminderList;
         this.filter = filter;
+        this.allReminders = allReminders; // keep reference for All page
     }
 
     @NonNull
@@ -82,6 +83,11 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
                 reminderList.remove(position);
                 notifyItemRemoved(position);
                 notifyItemRangeChanged(position, reminderList.size());
+
+                // Also remove from main allReminders if filter is All
+                if ("All".equals(filter) && allReminders != null) {
+                    allReminders.remove(reminder);
+                }
             } else {
                 notifyItemChanged(position); // Completed page just updates
             }
