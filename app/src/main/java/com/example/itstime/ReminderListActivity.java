@@ -1,7 +1,10 @@
 package com.example.itstime;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,10 +43,17 @@ public class ReminderListActivity extends AppCompatActivity {
         reminderAdapter = new ReminderAdapter(this, filteredReminders, filter);
         reminderRecyclerView.setAdapter(reminderAdapter);
 
-        loadReminders(); // Load reminders from database
+        loadReminders();
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                setResult(RESULT_OK); // ✅ Notify MainActivity
+                finish();
+            }
+        });
     }
 
-    // Load reminders from database
     public void loadReminders() {
         executor.execute(() -> {
             List<Reminder> all = db.reminderDao().getAllReminders();
@@ -53,7 +63,6 @@ public class ReminderListActivity extends AppCompatActivity {
             allReminders.addAll(all);
             allReminders.addAll(completed);
 
-            // Filter based on selected page
             filteredReminders.clear();
             for (Reminder r : allReminders) {
                 switch (filter) {
@@ -64,7 +73,7 @@ public class ReminderListActivity extends AppCompatActivity {
                         if (!isToday(r) && !r.completed) filteredReminders.add(r);
                         break;
                     case "All":
-                        if (!r.completed) filteredReminders.add(r); // Only show not completed
+                        filteredReminders.add(r);
                         break;
                     case "Completed":
                         if (r.completed) filteredReminders.add(r);

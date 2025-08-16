@@ -4,132 +4,129 @@ import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.DatePicker;
 import android.widget.TimePicker;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Calendar;
-import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AddReminderActivity extends AppCompatActivity {
 
-    EditText titleEditText, notesEditText;
+    EditText titleInput, notesInput;
     TextView dateTextView, timeTextView;
     Button saveButton;
-
-    int year, month, day, hour, minute;
+    Calendar calendar;
+    AppDatabase db;
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_reminder);
 
-        titleEditText = findViewById(R.id.titleEditText);
-        notesEditText = findViewById(R.id.notesEditText);
+        titleInput = findViewById(R.id.titleEditText);
+        notesInput = findViewById(R.id.notesEditText);
         dateTextView = findViewById(R.id.dateTextView);
         timeTextView = findViewById(R.id.timeTextView);
         saveButton = findViewById(R.id.saveButton);
 
-        Calendar calendar = Calendar.getInstance();
-        year = calendar.get(Calendar.YEAR);
-        month = calendar.get(Calendar.MONTH);
-        day = calendar.get(Calendar.DAY_OF_MONTH);
-        hour = calendar.get(Calendar.HOUR_OF_DAY);
-        minute = calendar.get(Calendar.MINUTE);
-
-        updateDateText();
-        updateTimeText();
+        calendar = Calendar.getInstance();
+        db = AppDatabase.getInstance(this);
 
         // Date picker
         dateTextView.setOnClickListener(v -> {
-            DatePickerDialog datePickerDialog = new DatePickerDialog(AddReminderActivity.this,
-                    (view, selectedYear, selectedMonth, selectedDay) -> {
-                        year = selectedYear;
-                        month = selectedMonth;
-                        day = selectedDay;
-                        updateDateText();
-                    }, year, month, day);
-            datePickerDialog.show();
+            DatePickerDialog datePicker = new DatePickerDialog(this,
+                    (DatePicker view, int year, int month, int dayOfMonth) -> {
+                        calendar.set(Calendar.YEAR, year);
+                        calendar.set(Calendar.MONTH, month);
+                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        dateTextView.setText(dayOfMonth + "/" + (month + 1) + "/" + year);
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH));
+            datePicker.show();
         });
 
         // Time picker
         timeTextView.setOnClickListener(v -> {
-            TimePickerDialog timePickerDialog = new TimePickerDialog(AddReminderActivity.this,
-                    (view, selectedHour, selectedMinute) -> {
-                        hour = selectedHour;
-                        minute = selectedMinute;
-                        updateTimeText();
-                    }, hour, minute, false);
-            timePickerDialog.show();
+            TimePickerDialog timePicker = new TimePickerDialog(this,
+                    (TimePicker view, int hourOfDay, int minute) -> {
+                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        calendar.set(Calendar.MINUTE, minute);
+                        calendar.set(Calendar.SECOND, 0);
+                        timeTextView.setText(String.format("%02d:%02d", hourOfDay, minute));
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    true);
+            timePicker.show();
         });
 
         // Save button
         saveButton.setOnClickListener(v -> {
-            String title = titleEditText.getText().toString().trim();
-            String notes = notesEditText.getText().toString().trim();
+            String title = titleInput.getText().toString();
+            String notes = notesInput.getText().toString();
 
-            if (title.isEmpty()) {
-                titleEditText.setError("Title required");
-                return;
-            }
+            Reminder reminder = new Reminder();
+            reminder.title = title;
+            reminder.notes = notes;
+            reminder.year = calendar.get(Calendar.YEAR);
+            reminder.month = calendar.get(Calendar.MONTH);
+            reminder.day = calendar.get(Calendar.DAY_OF_MONTH);
+            reminder.hour = calendar.get(Calendar.HOUR_OF_DAY);
+            reminder.minute = calendar.get(Calendar.MINUTE);
+            reminder.completed = false;
 
-            Reminder reminder = new Reminder(title, notes, year, month, day, hour, minute);
+            executor.execute(() -> {
+                // ✅ Insert returns long ID
+                long id = db.reminderDao().insert(reminder);
+                reminder.id = (int) id;
 
-            new Thread(() -> {
-                AppDatabase db = AppDatabase.getInstance(getApplicationContext());
-                db.reminderDao().insert(reminder);
-
-                int notificationId = (int) System.currentTimeMillis();
-                Calendar cal = Calendar.getInstance();
-                cal.set(year, month, day, hour, minute, 0);
-
-                scheduleNotification(notificationId, title, notes, cal.getTimeInMillis());
+                // Schedule alarm
+                scheduleAlarm(reminder);
 
                 runOnUiThread(() -> {
                     setResult(RESULT_OK);
                     finish();
                 });
-            }).start();
+            });
         });
     }
 
-    private void updateDateText() {
-        dateTextView.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", day, month + 1, year));
-    }
-
-    private void updateTimeText() {
-        String amPm = (hour >= 12) ? "PM" : "AM";
-        int hour12 = hour % 12;
-        if (hour12 == 0) hour12 = 12;
-        timeTextView.setText(String.format(Locale.getDefault(), "%02d:%02d %s", hour12, minute, amPm));
-    }
-
-    private void scheduleNotification(int notificationId, String title, String message, long triggerAtMillis) {
+    private void scheduleAlarm(Reminder reminder) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, ReminderReceiver.class);
-        intent.putExtra("title", title);
-        intent.putExtra("message", message);
-        intent.putExtra("notificationId", notificationId);
+        intent.putExtra("title", reminder.title);
+        intent.putExtra("message", reminder.notes);
+        intent.putExtra("notificationId", reminder.id);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this,
-                notificationId,
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this,
+                reminder.id,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         if (alarmManager != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
-            } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+            try {
+                // ✅ Handle exact alarms properly
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                    }
+                } else {
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                }
+            } catch (SecurityException e) {
+                e.printStackTrace();
             }
         }
     }

@@ -19,8 +19,9 @@ public interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE completed = 1")
     List<Reminder> getCompletedReminders();
 
+    // ✅ Return the row ID of inserted reminder
     @Insert
-    void insert(Reminder reminder);
+    long insert(Reminder reminder);
 
     @Update
     void update(Reminder reminder);

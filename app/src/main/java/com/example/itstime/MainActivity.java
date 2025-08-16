@@ -1,13 +1,20 @@
 package com.example.itstime;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.Calendar;
 import java.util.List;
@@ -21,19 +28,18 @@ public class MainActivity extends AppCompatActivity {
     AppDatabase db;
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    private static final int NOTIFICATION_PERMISSION_CODE = 101;
+    private static final int REQUEST_CODE_ADD_REMINDER = 1;
+    private static final int REQUEST_CODE_VIEW_REMINDERS = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // ------------------------------
-        // 1. Create Notification Channel
-        // ------------------------------
+        requestNotificationPermission();
         NotificationHelper.createNotificationChannel(this);
 
-        // ------------------------------
-        // 2. Initialize views
-        // ------------------------------
         todayCount = findViewById(R.id.today_count);
         scheduledCount = findViewById(R.id.scheduled_count);
         allCount = findViewById(R.id.all_count);
@@ -42,76 +48,55 @@ public class MainActivity extends AppCompatActivity {
 
         db = AppDatabase.getInstance(this);
 
-        // ------------------------------
-        // 3. Button click to open AddReminderActivity
-        // ------------------------------
         addReminderButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddReminderActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_CODE_ADD_REMINDER);
         });
 
-        // ------------------------------
-        // 4. Card click events
-        // ------------------------------
         findViewById(R.id.cardToday).setOnClickListener(v -> openReminderList("Today"));
         findViewById(R.id.cardScheduled).setOnClickListener(v -> openReminderList("Scheduled"));
         findViewById(R.id.cardAll).setOnClickListener(v -> openReminderList("All"));
         findViewById(R.id.cardCompleted).setOnClickListener(v -> openReminderList("Completed"));
 
-        // ------------------------------
-        // 5. Load counts initially
-        // ------------------------------
         loadReminderCounts();
-
-        // ------------------------------
-        // 6. Schedule notifications for all future reminders
-        // ------------------------------
-        executor.execute(() -> {
-            List<Reminder> reminders = db.reminderDao().getAllReminders();
-            for (Reminder r : reminders) {
-                Calendar cal = Calendar.getInstance();
-                cal.set(r.year, r.month, r.day, r.hour, r.minute, 0);
-
-                if (cal.getTimeInMillis() > System.currentTimeMillis()) {
-                    scheduleNotificationForReminder(r, cal.getTimeInMillis());
-                }
-            }
-        });
     }
 
-    // ------------------------------
-    // Open filtered reminder list
-    // ------------------------------
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        NOTIFICATION_PERMISSION_CODE);
+            }
+        }
+    }
+
     private void openReminderList(String filter) {
         Intent intent = new Intent(MainActivity.this, ReminderListActivity.class);
         intent.putExtra("filter", filter);
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_CODE_VIEW_REMINDERS);
     }
 
-    // ------------------------------
-    // Load counts for Today, Scheduled, All, Completed reminders
-    // ------------------------------
-    private void loadReminderCounts() {
+    public void loadReminderCounts() {
         executor.execute(() -> {
             List<Reminder> allReminders = db.reminderDao().getAllReminders();
             List<Reminder> completedReminders = db.reminderDao().getCompletedReminders();
 
-            int today = 0, scheduled = 0, all = 0, completed = completedReminders.size();
+            int today = 0, scheduled = 0, all = allReminders.size(), completed = completedReminders.size();
 
             Calendar now = Calendar.getInstance();
-            int currentDay = now.get(Calendar.DAY_OF_MONTH);
-            int currentMonth = now.get(Calendar.MONTH);
-            int currentYear = now.get(Calendar.YEAR);
-
             for (Reminder r : allReminders) {
-                if (r.day == currentDay && r.month == currentMonth && r.year == currentYear) {
-                    today++;
-                } else {
-                    scheduled++;
+                if (!r.completed) {
+                    if (r.day == now.get(Calendar.DAY_OF_MONTH) &&
+                            r.month == now.get(Calendar.MONTH) &&
+                            r.year == now.get(Calendar.YEAR)) {
+                        today++;
+                    } else {
+                        scheduled++;
+                    }
                 }
             }
-
-            all = today + scheduled;
 
             int finalToday = today;
             int finalScheduled = scheduled;
@@ -130,33 +115,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh counts smoothly
         loadReminderCounts();
     }
 
-    // ------------------------------
-    // Schedule notification for a single reminder
-    // ------------------------------
-    private void scheduleNotificationForReminder(Reminder r, long triggerTime) {
-        Intent intent = new Intent(this, ReminderReceiver.class);
-        intent.putExtra("title", r.title);
-        intent.putExtra("message", r.notes);
-        intent.putExtra("notificationId", r.id);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this,
-                r.id,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-            );
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            loadReminderCounts();
         }
     }
 }
