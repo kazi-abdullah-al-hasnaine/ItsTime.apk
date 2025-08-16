@@ -13,6 +13,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ItsTime">
+        <activity android:name=".ReportHistory1" />
+        <activity android:name=".WeeklyReport" />
+        <activity android:name=".MonthlyReport" />
+
 
         <!-- BroadcastReceiver for reminders -->
         <receiver

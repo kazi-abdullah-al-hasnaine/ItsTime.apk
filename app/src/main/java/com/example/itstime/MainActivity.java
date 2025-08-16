@@ -58,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.cardAll).setOnClickListener(v -> openReminderList("All"));
         findViewById(R.id.cardCompleted).setOnClickListener(v -> openReminderList("Completed"));
 
+        // ✅ New Report card click
+        findViewById(R.id.cardReport).setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ReportHistory1.class);
+            startActivity(intent);
+        });
+
         loadReminderCounts();
     }
 
