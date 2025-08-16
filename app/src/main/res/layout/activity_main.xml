@@ -29,60 +29,60 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cardToday"
         android:layout_width="0dp"
-        android:layout_height="110dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginTop="12dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
-        app:cardUseCompatPadding="true"
-        android:layout_marginTop="12dp"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintTop_toBottomOf="@id/searchEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/cardScheduled"
-        app:layout_constraintHorizontal_weight="1"
-        android:layout_marginEnd="8dp"
-        android:clickable="true"
-        android:focusable="true">
+        app:layout_constraintHorizontal_weight="1">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="12dp">
 
+            <!-- Icon -->
             <ImageView
                 android:id="@+id/today_icon"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="12dp"
                 android:src="@android:drawable/ic_menu_today"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="#333333" />
 
+            <!-- Label -->
             <TextView
                 android:id="@+id/today_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/today"
                 android:textColor="#333333"
                 android:textSize="14sp"
                 app:layout_constraintStart_toEndOf="@id/today_icon"
-                app:layout_constraintTop_toTopOf="@id/today_icon" />
+                app:layout_constraintTop_toTopOf="@id/today_icon"
+                app:layout_constraintBottom_toBottomOf="@id/today_icon" />
 
+            <!-- Count -->
             <TextView
                 android:id="@+id/today_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
                 android:text="@string/count_example"
-                android:textColor="#111111"
+                android:textColor="#666666"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/today_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/today_icon"
-                app:layout_constraintVertical_bias="0.666" />
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
@@ -90,162 +90,161 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/cardScheduled"
         android:layout_width="0dp"
-        android:layout_height="110dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="12dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
-        app:cardUseCompatPadding="true"
-        android:layout_marginTop="12dp"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintTop_toBottomOf="@id/searchEditText"
         app:layout_constraintStart_toEndOf="@id/cardToday"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_weight="1"
-        android:layout_marginStart="8dp"
-        android:clickable="true"
-        android:focusable="true">
+        app:layout_constraintHorizontal_weight="1">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="12dp">
 
+            <!-- Icon -->
             <ImageView
                 android:id="@+id/scheduled_icon"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="12dp"
                 android:src="@android:drawable/ic_menu_my_calendar"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="#333333" />
 
+            <!-- Label -->
             <TextView
                 android:id="@+id/scheduled_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/scheduled"
                 android:textColor="#333333"
                 android:textSize="14sp"
                 app:layout_constraintStart_toEndOf="@id/scheduled_icon"
-                app:layout_constraintTop_toTopOf="@id/scheduled_icon" />
+                app:layout_constraintTop_toTopOf="@id/scheduled_icon"
+                app:layout_constraintBottom_toBottomOf="@id/scheduled_icon" />
 
+            <!-- Count -->
             <TextView
                 android:id="@+id/scheduled_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
                 android:text="@string/count_example"
-                android:textColor="#111111"
+                android:textColor="#666666"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/scheduled_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/scheduled_icon"
-                app:layout_constraintVertical_bias="1.0" />
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Row 2: All -->
+    <!-- Row 2: All / Completed -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardAll"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
         android:layout_marginTop="12dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
-        app:cardUseCompatPadding="true"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintTop_toBottomOf="@id/cardToday"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/spacerRight"
-        app:layout_constraintHorizontal_weight="1"
-        android:layout_marginEnd="8dp"
-        android:clickable="true"
-        android:focusable="true">
+        app:layout_constraintEnd_toStartOf="@+id/cardCompleted"
+        app:layout_constraintHorizontal_weight="1">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="12dp">
 
+            <!-- Icon -->
             <ImageView
                 android:id="@+id/all_icon"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginTop="8dp"
                 android:src="@android:drawable/ic_menu_agenda"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:tint="#333333" />
 
+            <!-- Label -->
             <TextView
                 android:id="@+id/all_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
                 android:text="@string/all"
                 android:textColor="#333333"
                 android:textSize="14sp"
                 app:layout_constraintStart_toEndOf="@id/all_icon"
-                app:layout_constraintTop_toTopOf="@id/all_icon" />
+                app:layout_constraintTop_toTopOf="@id/all_icon"
+                app:layout_constraintBottom_toBottomOf="@id/all_icon" />
 
+            <!-- Count -->
             <TextView
                 android:id="@+id/all_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/count_example"
+                android:textColor="#666666"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#111111"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/all_icon"
-                app:layout_constraintBottom_toBottomOf="@id/all_icon"/>
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Invisible spacer -->
-    <View
-        android:id="@+id/spacerRight"
-        android:layout_width="0dp"
-        android:layout_height="100dp"
-        app:layout_constraintStart_toEndOf="@id/cardAll"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/cardAll" />
-
-    <!-- Completed -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardCompleted"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginTop="12dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
-        app:cardUseCompatPadding="true"
-        app:layout_constraintTop_toBottomOf="@id/cardAll"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        app:layout_constraintTop_toBottomOf="@id/cardScheduled"
+        app:layout_constraintStart_toEndOf="@id/cardAll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_weight="1">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="12dp">
 
+            <!-- Icon (scaled smaller for tick) -->
             <ImageView
                 android:id="@+id/completed_icon"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:src="@drawable/ic_completed"
-                app:tint="#555555"
+                android:scaleType="centerInside"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
+
+
+
+            <!-- Label -->
             <TextView
                 android:id="@+id/completed_label"
                 android:layout_width="wrap_content"
@@ -255,21 +254,22 @@
                 android:textColor="#333333"
                 app:layout_constraintStart_toEndOf="@id/completed_icon"
                 app:layout_constraintTop_toTopOf="@id/completed_icon"
+                app:layout_constraintBottom_toBottomOf="@id/completed_icon"
                 android:layout_marginStart="12dp"/>
 
+            <!-- Count -->
             <TextView
                 android:id="@+id/completed_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
                 android:text="@string/count_zero"
-                android:textColor="#111111"
+                android:textColor="#666666"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/completed_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/completed_icon"
-                app:layout_constraintVertical_bias="1.0" />
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

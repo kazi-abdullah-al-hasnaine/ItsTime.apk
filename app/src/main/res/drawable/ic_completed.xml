@@ -4,13 +4,23 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <!-- Circle background with lighter gray -->
+    <!-- Gray Circle Background -->
     <path
         android:fillColor="#888888"
-        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2z"/>
+        android:pathData="M12,2
+                          C6.48,2 2,6.48 2,12
+                          s4.48,10 10,10
+                          10,-4.48 10,-10
+                          S17.52,2 12,2z"/>
 
-    <!-- Checkmark -->
+    <!-- White Checkmark Centered -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M10,17l-5,-5 1.41,-1.41L10,14.17l7.59,-7.59L19,8l-9,9z"/>
+        android:pathData="M10,17
+                          l-5,-5
+                          1.41,-1.41
+                          L10,14.17
+                          l7.59,-7.59
+                          L19,8
+                          l-9,9z"/>
 </vector>
