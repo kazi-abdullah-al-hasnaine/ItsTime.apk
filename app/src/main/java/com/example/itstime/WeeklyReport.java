@@ -10,3 +10,7 @@ public class WeeklyReport extends AppCompatActivity {
         setContentView(R.layout.weekly_report);
     }
 }
+
+
+
+
