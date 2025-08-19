@@ -3,46 +3,63 @@
     package="com.example.itstime">
 
     <!-- Permissions -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.ItsTime">
-        <activity android:name=".ReportHistory1" />
-        <activity android:name=".WeeklyReport" />
-        <activity android:name=".MonthlyReport" />
+        android:theme="@style/AppTheme"
+        android:exported="false">
 
-
-        <!-- BroadcastReceiver for reminders -->
-        <receiver
-            android:name=".ReminderReceiver"
-            android:exported="true" />
-
-        <!-- MainActivity with singleTop launchMode -->
+        <!-- Main Activity (Launcher) -->
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:launchMode="singleTop">
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- AddReminderActivity -->
+        <!-- Add Reminder Activity -->
         <activity
             android:name=".AddReminderActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
 
-        <!-- ReminderListActivity -->
+        <!-- Reminder List Activity -->
         <activity
             android:name=".ReminderListActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Report History Activity -->
+        <activity
+            android:name=".ReportHistory1"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Weekly Report Activity (if you have it) -->
+        <activity
+            android:name=".WeeklyReport"
+            android:exported="false"
+            android:parentActivityName=".ReportHistory1" />
+
+        <!-- Monthly Report Activity (if you have it) -->
+        <activity
+            android:name=".MonthlyReport"
+            android:exported="false"
+            android:parentActivityName=".ReportHistory1" />
+
+        <!-- Reminder Receiver for Notifications -->
+        <receiver
+            android:name=".ReminderReceiver"
+            android:exported="false" />
 
     </application>
+
 </manifest>

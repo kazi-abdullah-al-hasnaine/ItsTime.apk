@@ -1,83 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp"
-    android:background="@drawable/reminder_card">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="#FFFFFF"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
 
-    <!-- Reminder Title -->
-    <TextView
-        android:id="@+id/reminderTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/title_hint"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="#111111" />
-
-    <!-- Reminder Notes -->
-    <TextView
-        android:id="@+id/reminderNotes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/notes_hint"
-        android:textSize="16sp"
-        android:textColor="#333333"
-        android:layout_marginTop="4dp" />
-
-    <!-- Date & Time -->
-    <TextView
-        android:id="@+id/reminderDateTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/select_date_time"
-        android:textSize="14sp"
-        android:textColor="#555555"
-        android:layout_marginTop="6dp" />
-
-    <!-- Buttons: Done & Delete -->
     <LinearLayout
-        android:id="@+id/buttonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp"
-        android:gravity="end"
-        android:weightSum="2">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/doneButton"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:minWidth="64dp"
-            android:text="@string/done"
-            android:textSize="14sp"
-            android:layout_marginEnd="8dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:textColor="#FFFFFF"
-            app:cornerRadius="20dp"
-            android:backgroundTint="#4CAF50"
-            android:elevation="2dp"
-            style="?attr/borderlessButtonStyle"/>
+        <!-- Main Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/deleteButton"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:minWidth="64dp"
-            android:text="@string/delete"
-            android:textSize="14sp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:textColor="#FFFFFF"
-            app:cornerRadius="20dp"
-            android:backgroundTint="#F44336"
-            android:elevation="2dp"
-            style="?attr/borderlessButtonStyle"/>
+            <!-- Reminder Title -->
+            <TextView
+                android:id="@+id/reminderTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reminder Title"
+                android:textSize="16sp"
+                android:textStyle="normal"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="#1A1A1A"
+                android:letterSpacing="0.01"
+                android:lineSpacingExtra="2dp" />
+
+            <!-- Reminder Notes -->
+            <TextView
+                android:id="@+id/reminderNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Notes will appear here"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginTop="6dp"
+                android:fontFamily="sans-serif"
+                android:lineSpacingExtra="1dp"
+                android:visibility="visible" />
+
+            <!-- Date & Time -->
+            <TextView
+                android:id="@+id/reminderDateTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="19/8/2025 • 2:30 PM"
+                android:textSize="13sp"
+                android:textColor="#999999"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
+                android:letterSpacing="0.02" />
+
+        </LinearLayout>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp"
+            android:gravity="end">
+
+            <!-- Done Button -->
+            <TextView
+                android:id="@+id/doneButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Mark Done"
+                android:textSize="13sp"
+                android:textColor="#1A1A1A"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/button_outline_minimal"
+                android:layout_marginEnd="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:letterSpacing="0.01" />
+
+            <!-- Delete Button -->
+            <TextView
+                android:id="@+id/deleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Delete"
+                android:textSize="13sp"
+                android:textColor="#999999"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/button_text_minimal"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:letterSpacing="0.01" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-</LinearLayout>
+</androidx.cardview.widget.CardView>

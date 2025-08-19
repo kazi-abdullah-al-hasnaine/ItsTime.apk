@@ -4,103 +4,164 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#F7F7F8">
+    android:background="#FAFAFA"
+    android:padding="20dp">
 
-    <!-- Title -->
+    <!-- Header -->
     <TextView
         android:id="@+id/reportTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Report Summary"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
+        android:text="Reports"
+        android:textSize="24sp"
+        android:textColor="#1A1A1A"
+        android:fontFamily="sans-serif-light"
+        android:letterSpacing="0.02"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="20dp" />
 
-    <!-- Weekly Summary Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardWeekly"
-        android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="20dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        android:clickable="true"
-        android:focusable="true"
+    <TextView
+        android:id="@+id/reportSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View your productivity insights"
+        android:textSize="15sp"
+        android:textColor="#666666"
+        android:fontFamily="sans-serif"
+        android:layout_marginTop="4dp"
         app:layout_constraintTop_toBottomOf="@id/reportTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="12dp">
-
-            <ImageView
-                android:id="@+id/weeklyIcon"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@android:drawable/ic_menu_week"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="#333333" />
-
-            <TextView
-                android:id="@+id/weeklyLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Weekly Summary"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                android:layout_marginStart="12dp"
-                app:layout_constraintStart_toEndOf="@id/weeklyIcon"
-                app:layout_constraintTop_toTopOf="@id/weeklyIcon"
-                app:layout_constraintBottom_toBottomOf="@id/weeklyIcon"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Monthly Summary Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardMonthly"
+    <!-- Report Cards Container -->
+    <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="20dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintTop_toBottomOf="@id/cardWeekly"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="48dp"
+        app:layout_constraintTop_toBottomOf="@id/reportSubtitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Weekly Report Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardWeekly"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="12dp">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
 
-            <ImageView
-                android:id="@+id/monthlyIcon"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@android:drawable/ic_menu_month"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="#333333" />
-
-            <TextView
-                android:id="@+id/monthlyLabel"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Monthly Summary"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                android:layout_marginStart="12dp"
-                app:layout_constraintStart_toEndOf="@id/monthlyIcon"
-                app:layout_constraintTop_toTopOf="@id/monthlyIcon"
-                app:layout_constraintBottom_toBottomOf="@id/monthlyIcon"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+                android:orientation="horizontal"
+                android:padding="24dp"
+                android:gravity="center_vertical">
+
+                <!-- Content -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Weekly Summary"
+                        android:textSize="17sp"
+                        android:textColor="#1A1A1A"
+                        android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Last 7 days performance"
+                        android:textSize="14sp"
+                        android:textColor="#999999"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+                <!-- Arrow -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="→"
+                    android:textSize="18sp"
+                    android:textColor="#CCCCCC"
+                    android:fontFamily="sans-serif-light" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Monthly Report Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardMonthly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="24dp"
+                android:gravity="center_vertical">
+
+                <!-- Content -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Monthly Summary"
+                        android:textSize="17sp"
+                        android:textColor="#1A1A1A"
+                        android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.01" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Complete monthly overview"
+                        android:textSize="14sp"
+                        android:textColor="#999999"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+                <!-- Arrow -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="→"
+                    android:textSize="18sp"
+                    android:textColor="#CCCCCC"
+                    android:fontFamily="sans-serif-light" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

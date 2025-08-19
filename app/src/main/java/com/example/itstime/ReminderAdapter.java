@@ -9,10 +9,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -44,9 +44,18 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
         // Set reminder details
         holder.reminderTitle.setText(reminder.title);
-        holder.reminderNotes.setText(reminder.notes);
-        holder.reminderDateTime.setText(reminder.day + "/" + (reminder.month + 1) + "/" + reminder.year +
-                " " + reminder.hour + ":" + reminder.minute);
+        holder.reminderNotes.setText(reminder.notes != null && !reminder.notes.isEmpty() ? reminder.notes : "No notes");
+
+        // Format date and time nicely
+        String amPm = reminder.hour >= 12 ? "PM" : "AM";
+        int displayHour = reminder.hour % 12;
+        if (displayHour == 0) displayHour = 12;
+
+        String formattedDateTime = String.format(Locale.getDefault(),
+                "%d/%d/%d • %d:%02d %s",
+                reminder.day, reminder.month + 1, reminder.year,
+                displayHour, reminder.minute, amPm);
+        holder.reminderDateTime.setText(formattedDateTime);
 
         // Only show Done button if not Completed page
         holder.doneButton.setVisibility("Completed".equals(filter) ? View.GONE : View.VISIBLE);
@@ -101,7 +110,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
     static class ReminderViewHolder extends RecyclerView.ViewHolder {
         TextView reminderTitle, reminderNotes, reminderDateTime;
-        MaterialButton doneButton, deleteButton;
+        TextView doneButton, deleteButton; // Changed from MaterialButton to TextView
 
         public ReminderViewHolder(@NonNull View itemView) {
             super(itemView);

@@ -14,7 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -42,8 +41,6 @@ public class MainActivity extends AppCompatActivity {
     private final List<Reminder> searchResults = new ArrayList<>();
 
     private static final int NOTIFICATION_PERMISSION_CODE = 101;
-    private static final int REQUEST_CODE_ADD_REMINDER = 1;
-    private static final int REQUEST_CODE_VIEW_REMINDERS = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,9 +125,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
+        // Updated to use startActivity instead of startActivityForResult
         addReminderButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddReminderActivity.class);
-            startActivityForResult(intent, REQUEST_CODE_ADD_REMINDER);
+            startActivity(intent);
         });
 
         findViewById(R.id.cardToday).setOnClickListener(v -> openReminderList("Today"));
@@ -218,9 +216,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openReminderList(String filter) {
-        Intent intent = new Intent(MainActivity.this, ReminderListActivity.class);
-        intent.putExtra("filter", filter);
-        startActivityForResult(intent, REQUEST_CODE_VIEW_REMINDERS);
+        try {
+            Intent intent = new Intent(MainActivity.this, ReminderListActivity.class);
+            intent.putExtra("filter", filter);
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+            android.util.Log.e("MainActivity", "Error opening reminder list: " + e.getMessage());
+        }
     }
 
     public void loadReminderCounts() {
@@ -260,14 +263,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadReminderCounts();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            loadReminderCounts();
-        }
+        loadReminderCounts(); // Always refresh counts when returning to this activity
     }
 }

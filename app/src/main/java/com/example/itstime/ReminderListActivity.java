@@ -1,6 +1,5 @@
 package com.example.itstime;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -44,11 +43,11 @@ public class ReminderListActivity extends AppCompatActivity {
         reminderRecyclerView.setAdapter(reminderAdapter);
         loadReminders();
 
+        // Simplified back press handling
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                setResult(RESULT_OK); // ✅ Notify MainActivity
-                finish();
+                finish(); // Simply finish the activity - MainActivity will refresh in onResume
             }
         });
     }
@@ -72,7 +71,7 @@ public class ReminderListActivity extends AppCompatActivity {
                         if (!isToday(r) && !r.completed) filteredReminders.add(r);
                         break;
                     case "All":
-                        if (!r.completed) filteredReminders.add(r); // ❌ Only show active reminders
+                        if (!r.completed) filteredReminders.add(r); // Only show active reminders
                         break;
                     case "Completed":
                         if (r.completed) filteredReminders.add(r);
@@ -83,7 +82,6 @@ public class ReminderListActivity extends AppCompatActivity {
             runOnUiThread(() -> reminderAdapter.notifyDataSetChanged());
         });
     }
-
 
     private boolean isToday(Reminder r) {
         Calendar today = Calendar.getInstance();

@@ -57,11 +57,8 @@ public class AddReminderActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // Back button
-        backButton.setOnClickListener(v -> {
-            setResult(RESULT_CANCELED);
-            finish();
-        });
+        // Back button - simplified
+        backButton.setOnClickListener(v -> finish());
 
         // Date picker - click on entire date container
         dateContainer.setOnClickListener(v -> showDatePicker());
@@ -156,10 +153,7 @@ public class AddReminderActivity extends AppCompatActivity {
             // Schedule alarm
             scheduleAlarm(reminder);
 
-            runOnUiThread(() -> {
-                setResult(RESULT_OK);
-                finish();
-            });
+            runOnUiThread(() -> finish()); // Simply finish - MainActivity will refresh in onResume
         });
     }
 

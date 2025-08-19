@@ -1,9 +1,20 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.ItsTime" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#6C757D</item>
+        <item name="colorPrimaryDark">#495057</item>
+        <item name="colorAccent">#48CAE4</item>
 
-    <style name="Theme.ItsTime" parent="Base.Theme.ItsTime" />
+        <!-- Remove status bar content -->
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Status bar styling -->
+        <item name="android:statusBarColor">#FAFAFA</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>
