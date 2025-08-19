@@ -1,9 +1,6 @@
 package com.example.itstime;
 
 import android.Manifest;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -11,11 +8,12 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -32,7 +30,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     TextView todayCount, scheduledCount, allCount, completedCount;
-    Button addReminderButton;
+    ImageView addReminderButton, searchCancelButton;
     EditText searchEditText;
     RecyclerView searchRecyclerView;
     LinearLayout cardsLayout;
@@ -41,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private SearchAdapter searchAdapter;
-    private List<Reminder> searchResults = new ArrayList<>();
+    private final List<Reminder> searchResults = new ArrayList<>();
 
     private static final int NOTIFICATION_PERMISSION_CODE = 101;
     private static final int REQUEST_CODE_ADD_REMINDER = 1;
@@ -61,6 +59,22 @@ public class MainActivity extends AppCompatActivity {
 
         db = AppDatabase.getInstance(this);
         loadReminderCounts();
+
+        // Handle back press using AndroidX OnBackPressedDispatcher
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // If search results are showing, hide them first
+                if (searchRecyclerView.getVisibility() == View.VISIBLE) {
+                    searchEditText.setText("");
+                    hideSearchResults();
+                    searchCancelButton.setVisibility(View.GONE);
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
     }
 
     private void initializeViews() {
@@ -70,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         completedCount = findViewById(R.id.completed_count);
         addReminderButton = findViewById(R.id.add_reminder_button);
         searchEditText = findViewById(R.id.searchEditText);
+        searchCancelButton = findViewById(R.id.searchCancelButton);
         searchRecyclerView = findViewById(R.id.searchRecyclerView);
         cardsLayout = findViewById(R.id.cardsLayout);
     }
@@ -93,13 +108,22 @@ public class MainActivity extends AppCompatActivity {
                 String query = s.toString().trim();
                 if (query.isEmpty()) {
                     hideSearchResults();
+                    searchCancelButton.setVisibility(View.GONE);
                 } else {
                     searchReminders(query);
+                    searchCancelButton.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void afterTextChanged(Editable s) {}
+        });
+
+        // Search cancel button click
+        searchCancelButton.setOnClickListener(v -> {
+            searchEditText.setText("");
+            hideSearchResults();
+            searchCancelButton.setVisibility(View.GONE);
         });
     }
 
@@ -162,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         // Clear search
         searchEditText.setText("");
         hideSearchResults();
+        searchCancelButton.setVisibility(View.GONE);
 
         // Determine which page this reminder belongs to
         String targetPage = determineReminderPage(reminder);
@@ -243,17 +268,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             loadReminderCounts();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        // If search results are showing, hide them first
-        if (searchRecyclerView.getVisibility() == View.VISIBLE) {
-            searchEditText.setText("");
-            hideSearchResults();
-        } else {
-            super.onBackPressed();
         }
     }
 }
