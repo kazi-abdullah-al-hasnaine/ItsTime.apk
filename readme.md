@@ -21,7 +21,7 @@ A modern, beautifully designed app to help you manage reminders, boost productiv
 ---
 
 ## 🖼️ Screenshots
-> *(Add screenshots of your main screens here!)*
+> *(Will be added later!)*
 
 ---
 
