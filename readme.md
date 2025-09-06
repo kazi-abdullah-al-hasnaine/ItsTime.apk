@@ -81,7 +81,8 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 ---
 
 ## 👤 Authors
-- [Your Name]  
+- Kazi Abdullah Al Hasnaine
+- Md Asaduzzaman Sunny
 
 ---
 
